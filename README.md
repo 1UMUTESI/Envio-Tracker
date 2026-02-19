@@ -1,4 +1,5 @@
-The Envio-Track project
+#The Envio-Track project
+##Objectives
 Envio-Track is a real-time IoT Monitoring Dashboard designed to track environmental conditions (Temperature & Humidity) and 
 provide automated/manual control over a motor (or actuator) via a web interface.
 
@@ -8,14 +9,14 @@ Automated Motor Logic: The server automatically triggers the motor based on temp
 Manual Override: Control the motor status directly from the web dashboard.
 REST API: Ready to receive data from ESP32, Arduino, or other IoT devices via JSON
 
-Tech Stack
+###Tech tracks:
 Backend: Node.js, Express.js
 Real-Time: Socket.io
 Frontend: HTML5, CSS3 (Modern UI), JavaScript
 Hardware Compatible: ESP32, ESP8266, DHT11/22 Sensors
 Getting Started
 
-Prerequisites
+####Prerequisites
 1. Make sure you have Node.js installed on your machine.
 2.InstallationClone the repository and install the dependencies:
 git clone https://github.com/YOUR_USERNAME/Envio-Track.git
