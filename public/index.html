@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        if (sessionStorage.getItem('token') !== 'active') {
+        window.location.href = '/login.html'; // Kick them out if not logged in
+    }
+
+    </script>
+    <title>Envio-Track | Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif; min-height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                        url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200');
+            background-size: cover; color: white; display: flex; flex-direction: column; align-items: center;
+        }
+        nav { width: 100%; padding: 20px; display: flex; justify-content: space-around; background: rgba(0,0,0,0.4); }
+        .grid { display: flex; gap: 20px; padding: 40px; flex-wrap: wrap; justify-content: center; }
+        .card {
+            background: rgba(203, 25, 25, 0.05); padding: 30px; border-radius: 20px;
+            width: 250px; text-align: center; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+        }
+        .val { font-size: 3em; color: #38bdf8; margin: 10px 0; font-weight: bold; }
+        button { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: #22c55e; color: white; }
+    </style>
+</head>
+<body>
+    <script>if(!sessionStorage.getItem('token')) window.location.href='/login.html';</script>
+    <nav>
+        <div style="font-weight: bold; font-size: 1.5em;">ENVIO-TRACK</div>
+        <button onclick="sessionStorage.clear(); location.reload()" style="width:auto; background:none; border: 1px solid red; color: red;">Logout</button>
+    </nav>
+    <div class="grid">
+        <div class="card"><div>Temperature</div><div class="val" id="temp">--°C</div></div>
+        <div class="card"><div>Humidity</div><div class="val" id="hum">--%</div></div>
+        <div class="card">
+            <div>Motor Control</div>
+            <div class="val" id="ms" style="font-size: 1.5em;">IDLE</div>
+            <button id="mb" onclick="toggle()">OPEN MOTOR</button>
+        </div>
+    </div>
+    <script>
+        const socket = io();
+        let status = "CLOSED";
+        socket.on('sensorUpdate', (data) => {
+            document.getElementById('temp').innerText = data.temperature + "°C";
+            document.getElementById('hum').innerText = data.humidity + "%";
+        });
+        socket.on('autoMotorUpdate', (s) => {
+            status = s;
+            document.getElementById('ms').innerText = s === "OPEN" ? "RUNNING" : "IDLE";
+            document.getElementById('mb').style.background = s === "OPEN" ? "#ef4444" : "#22c55e";
+            document.getElementById('mb').innerText = s === "OPEN" ? "CLOSE MOTOR" : "OPEN MOTOR";
+        });
+        function toggle() {
+            status = (status === "CLOSED") ? "OPEN" : "CLOSED";
+            socket.emit('toggleMotor', status);
+        }
+    </script>
+</body>
+</html>

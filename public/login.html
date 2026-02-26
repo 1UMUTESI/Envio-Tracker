@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Envio-Track | Login</title>
+    <style>
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200');
+            background-size: cover; color: white;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px);
+            padding: 40px; border-radius: 20px; width: 320px; text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            border: none; background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+        }
+        button {
+            width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px;
+            border: none; background: #38bdf8; color: #0b0f1a; font-weight: bold; cursor: pointer;
+        }
+        .toggle { margin-top: 15px; font-size: 0.8em; cursor: pointer; color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 id="title">Login</h2>
+        
+        <!-- INPUTS MUST BE HERE, NOT IN SCRIPT -->
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <input type="email" id="email" placeholder="Email">
+
+        <button onclick="auth()" id="btn">Login</button>
+        
+        <div class="toggle" id="toggleText" onclick="swap()">Need an account? Sign Up</div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function swap() {
+            isLogin = !isLogin;
+            document.getElementById('title').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('btn').innerText = isLogin ? "Login" : "Register";
+            document.getElementById('toggleText').innerText = isLogin ? "Need an account? Sign Up" : "Have an account? Login";
+        }
+
+        async function auth() {
+            const uValue = document.getElementById('username').value;
+            const pValue = document.getElementById('password').value;
+            const eValue = document.getElementById('email').value;
+
+            const path = isLogin ? '/api/login' : '/api/signup';
+
+            try {
+                const res = await fetch(path, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        username: uValue, 
+                        password: pValue, 
+                        email: eValue 
+                    })
+                });
+
+                if(res.ok) {
+                    sessionStorage.setItem('token', 'active');
+                    window.location.href = '/index.html';
+                } else { 
+                    const err = await res.text();
+                    alert("Auth Failed: " + err); 
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Server is offline or unreachable.");
+            }
+        }
+    </script>
+</body>
+</html>
