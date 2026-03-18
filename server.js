@@ -18,15 +18,14 @@ const USERS_FILE = './data/users.json';
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "yourgmail@gmail.com",      // ← change
-    pass: "frtz ycvg avky nzkp"         // ← Gmail App Password
+    user: process.env.EMAIL_USER,   // ← set in Railway
+    pass: process.env.EMAIL_PASS    // ← set in Railway
   }
 });
 
 function sendLoginEmail(userEmail) {
-
   const mailOptions = {
-    from: "yourgmail@gmail.com",
+    from: process.env.EMAIL_USER,
     to: userEmail,
     subject: "Envio-Track Login Alert",
     text: "You have successfully logged into Envio-Track dashboard."
@@ -42,11 +41,7 @@ function sendLoginEmail(userEmail) {
    FILE INITIALIZATION
 ================================ */
 if (!fs.existsSync('./data')) fs.mkdirSync('./data');
-
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, "[]");
-  console.log("✅ users.json created");
-}
+if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, "[]");
 
 /* ===============================
    MIDDLEWARE
@@ -58,39 +53,22 @@ app.use(express.static('public'));
    SIGNUP ROUTE
 ================================ */
 app.post('/api/signup', (req, res) => {
-
   const { username, password, email } = req.body;
   let users = [];
-
-  try {
-    users = JSON.parse(fs.readFileSync(USERS_FILE));
-  } catch {
-    users = [];
-  }
-
-  if (users.find(u => u.username === username)) {
-    return res.status(400).send("User exists");
-  }
-
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
+  if (users.find(u => u.username === username)) return res.status(400).send("User exists");
   users.push({ username, password, email });
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-
   res.send("Success");
 });
 
 /* ===============================
-   LOGIN ROUTE (EMAIL SENT HERE)
+   LOGIN ROUTE
 ================================ */
 app.post('/api/login', (req, res) => {
-
   const { username, password, email } = req.body;
   let users = [];
-
-  try {
-    users = JSON.parse(fs.readFileSync(USERS_FILE));
-  } catch {
-    users = [];
-  }
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
 
   const user = users.find(
     u => u.username === username &&
@@ -99,13 +77,9 @@ app.post('/api/login', (req, res) => {
   );
 
   if (user) {
-
-    // ⭐ SEND EMAIL AFTER LOGIN SUCCESS
     sendLoginEmail(email);
-
     res.send("OK");
-  }
-  else {
+  } else {
     res.status(401).send("Invalid credentials");
   }
 });
@@ -114,35 +88,20 @@ app.post('/api/login', (req, res) => {
    IOT DATA ROUTE
 ================================ */
 app.post('/api/data', (req, res) => {
-
   const { temperature, humidity } = req.body;
   const timestamp = new Date().toLocaleTimeString();
 
-  // Automatic temperature logic
-  if (temperature > TEMP_THRESHOLD) {
-
-    if (motorState !== "OPEN") {
-      motorState = "OPEN";
-      console.log(`⚠️ Temp ${temperature}°C → Opening vent`);
-      io.emit('autoMotorUpdate', motorState);
-    }
-
-  } else {
-
-    if (motorState !== "CLOSED") {
-      motorState = "CLOSED";
-      console.log(`✅ Temp normal → Closing vent`);
-      io.emit('autoMotorUpdate', motorState);
-    }
+  if (temperature > TEMP_THRESHOLD && motorState !== "OPEN") {
+    motorState = "OPEN";
+    console.log(`⚠️ Temp ${temperature}°C → Opening vent`);
+    io.emit('autoMotorUpdate', motorState);
+  } else if (temperature <= TEMP_THRESHOLD && motorState !== "CLOSED") {
+    motorState = "CLOSED";
+    console.log(`✅ Temp normal → Closing vent`);
+    io.emit('autoMotorUpdate', motorState);
   }
 
-  io.emit('sensorUpdate', {
-    temperature,
-    humidity,
-    timestamp,
-    motorState
-  });
-
+  io.emit('sensorUpdate', { temperature, humidity, timestamp, motorState });
   res.send("Data Processed");
 });
 
@@ -157,22 +116,16 @@ app.get('/api/motor-status', (req, res) => {
    SOCKET.IO
 ================================ */
 io.on('connection', (socket) => {
-
   console.log("Client connected");
-
   socket.on('toggleMotor', (state) => {
     motorState = state;
     io.emit('autoMotorUpdate', state);
     console.log(`Manual Override → ${state}`);
   });
-
 });
 
 /* ===============================
-   START SERVER (ONLY ONE!)
+   START SERVER
 ================================ */
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
