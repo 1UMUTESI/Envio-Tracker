@@ -42,22 +42,44 @@
         </div>
     </div>
     <script>
+           
         const socket = io();
-        let status = "CLOSED";
+        let currentStatus = "CLOSED"; // Renamed to avoid confusion with window.status
+
+        // 1. Listen for sensor data
         socket.on('sensorUpdate', (data) => {
             document.getElementById('temp').innerText = data.temperature + "°C";
             document.getElementById('hum').innerText = data.humidity + "%";
+            
+            // Sync status if the server sends it in sensorUpdate
+            if(data.motorState) updateUI(data.motorState);
         });
+
+        // 2. Listen for Motor changes (Manual or Auto)
         socket.on('autoMotorUpdate', (s) => {
-            status = s;
-            document.getElementById('ms').innerText = s === "OPEN" ? "RUNNING" : "IDLE";
-            document.getElementById('mb').style.background = s === "OPEN" ? "#ef4444" : "#22c55e";
-            document.getElementById('mb').innerText = s === "OPEN" ? "CLOSE MOTOR" : "OPEN MOTOR";
+            updateUI(s);
         });
-        function toggle() {
-            status = (status === "CLOSED") ? "OPEN" : "CLOSED";
-            socket.emit('toggleMotor', status);
+
+        // 3. Central UI Update Function
+        function updateUI(s) {
+            currentStatus = s;
+            const statusText = document.getElementById('ms');
+            const button = document.getElementById('mb');
+
+            statusText.innerText = (s === "OPEN") ? "RUNNING" : "IDLE";
+            statusText.style.color = (s === "OPEN") ? "#ef4444" : "#38bdf8";
+            
+            button.style.background = (s === "OPEN") ? "#ef4444" : "#22c55e";
+            button.innerText = (s === "OPEN") ? "CLOSE MOTOR" : "OPEN MOTOR";
         }
+
+        // 4. Toggle function sends the DESIRED next state
+        function toggle() {
+            const nextState = (currentStatus === "CLOSED") ? "OPEN" : "CLOSED";
+            socket.emit('toggleMotor', nextState);
+        }
+    
+
     </script>
 </body>
 </html>
