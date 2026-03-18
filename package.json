@@ -1,7 +1,7 @@
 {
   "name": "envio-track",
   "version": "1.0.0",
-  "description": "Envio-Track is a real-time IoT Monitoring Dashboard designed to track environmental conditions (Temperature & Humidity) and \r provide automated/manual control over a motor (or actuator) via a web interface.",
+  "description": "Envio-Track is a real-time IoT Monitoring Dashboard designed to track environmental conditions (Temperature & Humidity) and provide automated/manual control over a motor (or actuator) via a web interface.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,12 +11,17 @@
     "type": "git",
     "url": "git+https://github.com/1UMUTESI/Envio-Tracker.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["IoT", "Arduino", "Dashboard", "Monitoring"],
+  "author": "Fionah Umutesi",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/1UMUTESI/Envio-Tracker/issues"
   },
-  "homepage": "https://github.com/1UMUTESI/Envio-Tracker#readme"
+  "homepage": "https://github.com/1UMUTESI/Envio-Tracker#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  }
 }
