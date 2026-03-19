@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -59,10 +60,20 @@ app.use(express.static('public'));
    SIGNUP ROUTE
 ================================ */
 app.post('/api/signup', (req, res) => {
-  const { username, password, email } = req.body;
+    const { username, password, email, registrationSecret } = req.body;
+    
+    //  secret word you want
+    const MASTER_KEY = "ENVIOTRACKING_2026"; 
+
+    if (registrationSecret !== MASTER_KEY) {
+        return res.status(403).send("Incorrect Invite Key. You cannot register.");
+    }
+    // user saving logic ..
   let users = [];
-  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
-  if (users.find(u => u.username === username)) return res.status(400).send("User exists");
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); }
+   catch (e){ users = []; }
+  if (users.find(u => u.username === username)) 
+    return res.status(400).send("User exists");
   users.push({ username, password, email });
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
   res.send("Success");
