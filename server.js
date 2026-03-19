@@ -6,7 +6,13 @@ const nodemailer = require("nodemailer");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    },
+    allowEIO3: true // THIS IS THE FIX
+});
 
 let motorState = "CLOSED";
 const TEMP_THRESHOLD = 30.0;
