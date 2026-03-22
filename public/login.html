@@ -18,7 +18,13 @@
         input {
             width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
             border: none; background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+            outline: none;
         }
+        input:focus { border: 1px solid #38bdf8; }
+        
+        /* Hidden by default, shown during Sign Up */
+        #secret-container { display: none; } 
+
         button {
             width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px;
             border: none; background: #38bdf8; color: #0b0f1a; font-weight: bold; cursor: pointer;
@@ -30,10 +36,13 @@
     <div class="card">
         <h2 id="title">Login</h2>
         
-        <!-- INPUTS MUST BE HERE, NOT IN SCRIPT -->
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <input type="email" id="email" placeholder="Email">
+        
+        <div id="secret-container">
+            <input type="password" id="regSecret" placeholder="Admin Invite Key">
+        </div>
 
         <button onclick="auth()" id="btn">Login</button>
         
@@ -48,12 +57,16 @@
             document.getElementById('title').innerText = isLogin ? "Login" : "Sign Up";
             document.getElementById('btn').innerText = isLogin ? "Login" : "Register";
             document.getElementById('toggleText').innerText = isLogin ? "Need an account? Sign Up" : "Have an account? Login";
+            
+            // Show secret key field only when signing up
+            document.getElementById('secret-container').style.display = isLogin ? "none" : "block";
         }
 
         async function auth() {
             const uValue = document.getElementById('username').value;
             const pValue = document.getElementById('password').value;
             const eValue = document.getElementById('email').value;
+            const sValue = document.getElementById('regSecret').value;
 
             const path = isLogin ? '/api/login' : '/api/signup';
 
@@ -64,7 +77,8 @@
                     body: JSON.stringify({ 
                         username: uValue, 
                         password: pValue, 
-                        email: eValue 
+                        email: eValue,
+                        registrationSecret: sValue // Sending the key to server
                     })
                 });
 
@@ -73,11 +87,11 @@
                     window.location.href = '/index.html';
                 } else { 
                     const err = await res.text();
-                    alert("Auth Failed: " + err); 
+                    alert("Access Denied: " + err); 
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("Server is offline or unreachable.");
+                alert("Server Error. Try again later.");
             }
         }
     </script>
